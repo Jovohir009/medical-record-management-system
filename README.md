@@ -1,5 +1,7 @@
 ## Overview
 
+Link to the website: https://medical-record-management-system.netlify.app/
+
 The Medical Record Management System is a full-stack web application designed to streamline the management of patient information, medical records, departments, and healthcare operations within a medical facility.
 
 The project was developed to provide a centralized platform where healthcare staff can securely manage patient data, monitor medical records, and improve the efficiency of administrative workflows. By digitizing record management, the system reduces manual processes and improves accessibility, consistency, and organization of healthcare information.
