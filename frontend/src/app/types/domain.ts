@@ -100,6 +100,27 @@ export interface Appointment {
   status: "PENDING" | "ACCEPTED" | "DECLINED";
 }
 
+export interface Referral {
+  id: string;
+  patientId: string;
+  patientName: string;
+  referredByUserId: number;
+  referredByName: string;
+  fromDepartmentId: string;
+  fromDepartmentName: string;
+  toDepartmentId: string;
+  toDepartmentName: string;
+  fromDoctorId: string;
+  fromDoctorName: string;
+  toDoctorId: string;
+  toDoctorName: string;
+  referralReason: string;
+  referralNotes: string;
+  referralDate: string;
+  status: "PENDING" | "COMPLETED" | "CANCELLED";
+  createdAt: string;
+}
+
 export interface AuditLog {
   id: string;
   user: string;

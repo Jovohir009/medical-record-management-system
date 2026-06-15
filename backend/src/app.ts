@@ -7,6 +7,7 @@ import doctorRoutes from "./routes/doctorRoutes";
 import patientRoutes from "./routes/patientRoutes";
 import diagnosisRoutes from "./routes/diagnosisRoutes";
 import appointmentRoutes from "./routes/appointmentRoutes";
+import referralRoutes from "./routes/referralRoutes";
 import departmentRoutes from "./routes/departmentRoutes";
 import dashboardRoutes from "./routes/dashboardRoutes";
 import { authenticateToken } from "./middleware/authMiddleware";
@@ -22,6 +23,7 @@ app.use("/api/doctors", authenticateToken, doctorRoutes);
 app.use("/api/patients", authenticateToken, patientRoutes);
 app.use("/api/diagnoses", authenticateToken, diagnosisRoutes);
 app.use("/api/appointments", authenticateToken, appointmentRoutes);
+app.use("/api/referrals", authenticateToken, referralRoutes);
 app.use("/api/departments", authenticateToken, departmentRoutes);
 app.use("/api/dashboard", authenticateToken, dashboardRoutes);
 

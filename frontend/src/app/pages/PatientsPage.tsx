@@ -12,6 +12,7 @@ import {
 import { useApp } from "../context/AppContext";
 import { Patient } from "../types/domain";
 import { deletePatient } from "../services/patientService";
+import { ReferralModal } from "../components/patients/ReferralModal";
 
 const statusStyles: Record<
   Patient["status"],
@@ -55,9 +56,10 @@ export function PatientsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, patients, doctors, dataLoading, refreshData } = useApp();
+  const { user, patients, doctors, departments, dataLoading, refreshData } = useApp();
   const [deletingPatientId, setDeletingPatientId] = useState("");
   const [actionError, setActionError] = useState("");
+  const [referralModalOpen, setReferralModalOpen] = useState(false);
 
   const basePath = location.pathname.startsWith("/clinician")
     ? "/clinician"
@@ -68,7 +70,10 @@ export function PatientsPage() {
   const canRegister = user?.role !== "clinician";
   const canEdit = user?.role === "administrator" || user?.role === "clinician";
   const canDelete = user?.role === "administrator";
-  const canRefer = user?.role === "clinician" || user?.role === "administrator";
+  const canRefer =
+    user?.role === "clinician" ||
+    user?.role === "administrator" ||
+    user?.role === "receptionist";
 
   const filtered = patients.filter((p) => {
     const matchSearch =
@@ -117,6 +122,7 @@ export function PatientsPage() {
         <div className="flex items-center gap-3">
           {canRefer && (
             <button
+              onClick={() => setReferralModalOpen(true)}
               className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-white transition-colors"
               style={{
                 backgroundColor: "#0D9488",
@@ -157,6 +163,15 @@ export function PatientsPage() {
           )}
         </div>
       </div>
+
+      <ReferralModal
+        open={referralModalOpen}
+        patients={patients}
+        doctors={doctors}
+        departments={departments}
+        refreshData={refreshData}
+        onClose={() => setReferralModalOpen(false)}
+      />
 
       {/* Critical Alert */}
       {counts.critical > 0 && (

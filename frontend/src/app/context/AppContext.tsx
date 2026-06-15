@@ -13,6 +13,7 @@ import {
   Diagnosis,
   Doctor,
   Patient,
+  Referral,
   SystemUser,
   UserRole,
 } from "../types/domain";
@@ -22,6 +23,7 @@ import { getAppointments } from "../services/appointmentService";
 import { getDepartments } from "../services/departmentService";
 import { getDiagnoses } from "../services/diagnosisService";
 import { getPatients } from "../services/patientService";
+import { getReferralHistory } from "../services/referralService";
 import { getDoctors } from "../services/specialistService";
 import { getUsers } from "../services/userService";
 
@@ -36,7 +38,12 @@ interface AppContextType {
   departments: Department[];
   users: SystemUser[];
   appointments: Appointment[];
-  login: (email: string, password: string, remember: boolean) => Promise<AuthUser>;
+  referrals: Referral[];
+  login: (
+    email: string,
+    password: string,
+    remember: boolean,
+  ) => Promise<AuthUser>;
   logout: () => void;
   refreshData: () => Promise<void>;
 }
@@ -60,6 +67,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [users, setUsers] = useState<SystemUser[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [referrals, setReferrals] = useState<Referral[]>([]);
 
   const refreshData = useCallback(async () => {
     if (!getAuthToken()) return;
@@ -75,6 +83,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         departmentsData,
         usersData,
         appointmentsData,
+        referralsData,
       ] = await Promise.all([
         getDoctors(),
         getPatients(),
@@ -82,6 +91,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         getDepartments(),
         getUsers(),
         getAppointments(),
+        getReferralHistory(),
       ]);
 
       setDoctors(doctorsData);
@@ -90,8 +100,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setDepartments(departmentsData);
       setUsers(usersData);
       setAppointments(appointmentsData);
+      setReferrals(referralsData);
     } catch (error) {
-      setDataError(error instanceof Error ? error.message : "Unable to load data");
+      setDataError(
+        error instanceof Error ? error.message : "Unable to load data",
+      );
     } finally {
       setDataLoading(false);
     }
@@ -142,6 +155,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setDepartments([]);
     setUsers([]);
     setAppointments([]);
+    setReferrals([]);
   };
 
   return (
@@ -157,6 +171,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         departments,
         users,
         appointments,
+        referrals,
         login,
         logout,
         refreshData,

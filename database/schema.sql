@@ -101,6 +101,27 @@ CREATE TABLE appointments (
     UNIQUE KEY unique_doctor_appointment (doctor_id, appointment_date, appointment_time)
 );
 
+CREATE TABLE referrals (
+    referral_id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id INT NOT NULL,
+    referred_by_user_id INT NOT NULL,
+    from_department_id INT NOT NULL,
+    to_department_id INT NOT NULL,
+    from_doctor_id INT NOT NULL,
+    to_doctor_id INT NOT NULL,
+    referral_reason VARCHAR(255) NOT NULL,
+    referral_notes TEXT,
+    referral_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('PENDING', 'COMPLETED', 'CANCELLED') NOT NULL DEFAULT 'COMPLETED',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE,
+    FOREIGN KEY (referred_by_user_id) REFERENCES users(id) ON DELETE RESTRICT,
+    FOREIGN KEY (from_department_id) REFERENCES departments(id) ON DELETE RESTRICT,
+    FOREIGN KEY (to_department_id) REFERENCES departments(id) ON DELETE RESTRICT,
+    FOREIGN KEY (from_doctor_id) REFERENCES doctors(id) ON DELETE RESTRICT,
+    FOREIGN KEY (to_doctor_id) REFERENCES doctors(id) ON DELETE RESTRICT
+);
+
 CREATE TABLE audit_logs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
@@ -124,3 +145,5 @@ CREATE TABLE doctor_availability (
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_patients_name ON patients(full_name);
 CREATE INDEX idx_appointments_date ON appointments(appointment_date);
+CREATE INDEX idx_referrals_patient ON referrals(patient_id);
+CREATE INDEX idx_referrals_date ON referrals(referral_date);

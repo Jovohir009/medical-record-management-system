@@ -5,6 +5,7 @@ import {
   Diagnosis,
   Doctor,
   Patient,
+  Referral,
   SystemUser,
 } from "../types/domain";
 
@@ -146,6 +147,29 @@ export function mapAppointment(row: any): Appointment {
     appointmentTime: timeOnly(row.appointment_time),
     notes: row.notes ?? "",
     status: row.status ?? "PENDING",
+  };
+}
+
+export function mapReferral(row: any): Referral {
+  return {
+    id: String(row.referral_id),
+    patientId: String(row.patient_id),
+    patientName: row.patient_name ?? "",
+    referredByUserId: Number(row.referred_by_user_id),
+    referredByName: row.referred_by_name ?? "",
+    fromDepartmentId: String(row.from_department_id),
+    fromDepartmentName: row.from_department_name ?? "",
+    toDepartmentId: String(row.to_department_id),
+    toDepartmentName: row.to_department_name ?? "",
+    fromDoctorId: String(row.from_doctor_id),
+    fromDoctorName: row.from_doctor_name ?? "",
+    toDoctorId: String(row.to_doctor_id),
+    toDoctorName: row.to_doctor_name ?? "",
+    referralReason: row.referral_reason ?? "",
+    referralNotes: row.referral_notes ?? "",
+    referralDate: row.referral_date ?? "",
+    status: row.status ?? "COMPLETED",
+    createdAt: row.created_at ?? "",
   };
 }
 

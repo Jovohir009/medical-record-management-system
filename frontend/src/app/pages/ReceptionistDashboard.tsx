@@ -8,7 +8,7 @@ import {
   ChevronRight,
   Phone,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useApp } from "../context/AppContext";
 
 const apptStatusStyles = {
@@ -32,7 +32,7 @@ const apptStatusStyles = {
 export function ReceptionistDashboard() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
-  const { doctors, patients, appointments, user } = useApp();
+  const { doctors, patients, appointments, user, refreshData } = useApp();
   const today = new Date().toISOString().slice(0, 10);
   const sevenDaysAgo = Date.now() - 7 * 24 * 3600 * 1000;
 
@@ -41,6 +41,18 @@ export function ReceptionistDashboard() {
   const todayAppointments = appointments
     .filter((appointment) => appointment.appointmentDate === today)
     .sort((a, b) => a.appointmentTime.localeCompare(b.appointmentTime));
+  const appointmentStatusCounts = {
+    PENDING: appointments.filter((appointment) => appointment.status === "PENDING").length,
+    ACCEPTED: appointments.filter((appointment) => appointment.status === "ACCEPTED").length,
+    DECLINED: appointments.filter((appointment) => appointment.status === "DECLINED").length,
+  };
+  const recentAppointments = [...appointments]
+    .sort((a, b) => {
+      const aValue = `${a.appointmentDate}T${a.appointmentTime}`;
+      const bValue = `${b.appointmentDate}T${b.appointmentTime}`;
+      return bValue.localeCompare(aValue);
+    })
+    .slice(0, 10);
   const registeredThisWeek = patients.filter(
     (patient) => new Date(patient.registeredDate).getTime() >= sevenDaysAgo,
   ).length;
@@ -53,6 +65,14 @@ export function ReceptionistDashboard() {
             p.phone.includes(search),
         )
       : [];
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      void refreshData();
+    }, 15000);
+
+    return () => window.clearInterval(intervalId);
+  }, [refreshData]);
 
   return (
     <div>
@@ -287,6 +307,95 @@ export function ReceptionistDashboard() {
                   </div>
                 );
               })}
+              {todayAppointments.length === 0 && (
+                <div className="px-5 py-10 text-center">
+                  <p className="text-slate-400" style={{ fontSize: "0.875rem" }}>
+                    No appointments booked for today.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div
+            className="bg-white rounded-xl border border-slate-200"
+            style={{ boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.05)" }}
+          >
+            <div className="px-5 py-4 border-b border-slate-100">
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div>
+                  <h3 className="text-slate-900">Appointment Status Board</h3>
+                  <p className="text-slate-500 mt-0.5" style={{ fontSize: "0.78rem" }}>
+                    Live appointment records grouped by clinician decision state
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {(["PENDING", "ACCEPTED", "DECLINED"] as const).map((status) => {
+                    const statusInfo = apptStatusStyles[status];
+                    return (
+                      <span
+                        key={status}
+                        className={`px-3 py-1.5 rounded-full ${statusInfo.class}`}
+                        style={{ fontSize: "0.75rem", fontWeight: 600 }}
+                      >
+                        {statusInfo.label}: {appointmentStatusCounts[status]}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-slate-100 bg-slate-50/50">
+                    {["Patient", "Doctor", "Date", "Time", "Status"].map((heading) => (
+                      <th
+                        key={heading}
+                        className="px-5 py-3 text-left text-slate-500"
+                        style={{ fontSize: "0.72rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}
+                      >
+                        {heading}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentAppointments.map((appointment) => {
+                    const statusInfo = apptStatusStyles[appointment.status] ?? apptStatusStyles.PENDING;
+
+                    return (
+                      <tr key={appointment.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/50">
+                        <td className="px-5 py-3 text-slate-900" style={{ fontSize: "0.84rem", fontWeight: 500 }}>
+                          {appointment.patientName}
+                        </td>
+                        <td className="px-5 py-3 text-slate-600" style={{ fontSize: "0.82rem" }}>
+                          {appointment.doctorName}
+                        </td>
+                        <td className="px-5 py-3 text-slate-500" style={{ fontSize: "0.82rem" }}>
+                          {appointment.appointmentDate}
+                        </td>
+                        <td className="px-5 py-3 text-slate-500" style={{ fontSize: "0.82rem" }}>
+                          {appointment.appointmentTime}
+                        </td>
+                        <td className="px-5 py-3">
+                          <span className={`px-2.5 py-1 rounded-full ${statusInfo.class}`} style={{ fontSize: "0.72rem", fontWeight: 500 }}>
+                            {statusInfo.label}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              {recentAppointments.length === 0 && (
+                <div className="px-5 py-10 text-center">
+                  <p className="text-slate-400" style={{ fontSize: "0.875rem" }}>
+                    No appointment records found.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

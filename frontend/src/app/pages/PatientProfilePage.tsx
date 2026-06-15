@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { ArrowLeft, Phone, Mail, MapPin, Heart, AlertTriangle, Plus, Calendar, User } from 'lucide-react';
+import { ArrowLeft, Phone, Mail, MapPin, Heart, AlertTriangle, Plus, Calendar, User, ArrowRightLeft } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { getPatient } from '../services/patientService';
 import { Patient } from '../types/domain';
@@ -41,7 +41,7 @@ function formatDate(d: string) {
 export function PatientProfilePage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, patients, doctors, diagnoses } = useApp();
+  const { user, patients, doctors, diagnoses, referrals } = useApp();
   const [fetchedPatient, setFetchedPatient] = useState<Patient | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -90,6 +90,9 @@ export function PatientProfilePage() {
   const doctor = doctors.find(d => d.id === patient.assignedDoctorId);
   const patientDiagnoses = diagnoses.filter(d => d.patientId === patient.id).sort(
     (a, b) => new Date(b.diagnosedDate).getTime() - new Date(a.diagnosedDate).getTime()
+  );
+  const patientReferrals = referrals.filter(r => r.patientId === patient.id).sort(
+    (a, b) => new Date(b.referralDate).getTime() - new Date(a.referralDate).getTime()
   );
 
   const patientStatus = patient.status === 'critical'
@@ -221,7 +224,7 @@ export function PatientProfilePage() {
         </div>
 
         {/* Right: Diagnosis Timeline */}
-        <div className="xl:col-span-2">
+        <div className="xl:col-span-2 space-y-6">
           <div className="bg-white rounded-xl border border-slate-200 p-6" style={{ boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)' }}>
             <div className="flex items-center justify-between mb-6">
               <div>
@@ -283,6 +286,64 @@ export function PatientProfilePage() {
                     );
                   })}
                 </div>
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white rounded-xl border border-slate-200 p-6" style={{ boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)' }}>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-slate-900">Referral History</h3>
+                <p className="text-slate-500 mt-0.5" style={{ fontSize: '0.8rem' }}>{patientReferrals.length} recorded referral{patientReferrals.length !== 1 ? 's' : ''}</p>
+              </div>
+              <ArrowRightLeft className="w-5 h-5 text-slate-300" />
+            </div>
+
+            {patientReferrals.length === 0 ? (
+              <div className="text-center py-10">
+                <ArrowRightLeft className="w-10 h-10 text-slate-200 mx-auto mb-3" />
+                <p className="text-slate-400" style={{ fontSize: '0.9rem' }}>No referrals recorded yet.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {patientReferrals.map(referral => (
+                  <div key={referral.id} className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+                    <div className="flex items-start justify-between gap-4 flex-wrap">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-2">
+                          <span className="px-2.5 py-0.5 rounded-full bg-teal-100 text-teal-700" style={{ fontSize: '0.72rem', fontWeight: 600 }}>
+                            {referral.status}
+                          </span>
+                          <span className="text-slate-400" style={{ fontSize: '0.75rem' }}>
+                            {new Date(referral.referralDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </span>
+                        </div>
+                        <p className="text-slate-900" style={{ fontSize: '0.9rem', fontWeight: 600 }}>
+                          {referral.fromDepartmentName} to {referral.toDepartmentName}
+                        </p>
+                        <p className="text-slate-500 mt-1" style={{ fontSize: '0.8rem' }}>
+                          {referral.fromDoctorName} to {referral.toDoctorName}
+                        </p>
+                        <p className="text-slate-700 mt-3" style={{ fontSize: '0.85rem', fontWeight: 500 }}>
+                          {referral.referralReason}
+                        </p>
+                        {referral.referralNotes && (
+                          <p className="text-slate-500 mt-1.5" style={{ fontSize: '0.8rem', lineHeight: 1.5 }}>
+                            {referral.referralNotes}
+                          </p>
+                        )}
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-slate-400" style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>
+                          Referred By
+                        </p>
+                        <p className="text-slate-700 mt-1" style={{ fontSize: '0.8rem', fontWeight: 500 }}>
+                          {referral.referredByName}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
